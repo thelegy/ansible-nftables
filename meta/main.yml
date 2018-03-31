@@ -1,0 +1,19 @@
+galaxy_info:
+  author: Jan Beinke
+  description: Ansible role to setup nftables
+
+  license: LGPLv3
+
+  min_ansible_version: 2.4
+
+  platform:
+  - name: Debian
+    versions:
+    - 9
+
+  galaxy_tags:
+  - nftables
+  - firewall
+  - netfilter
+
+dependencies: []
