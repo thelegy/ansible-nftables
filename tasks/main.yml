@@ -3,11 +3,16 @@
     name: nftables
   become: yes
 
-- name: ensure iptables is not installed
-  package:
-    name: iptables
-    state: absent
+- name: ensure iptables service is stopped & disabled
+  service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+  failed_when: no
   become: yes
+  loop:
+  - iptables
+  - ip6tables
 
 - name: ensure /etc/nftables.d/ exists
   file:
