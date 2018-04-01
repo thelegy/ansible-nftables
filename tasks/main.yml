@@ -3,11 +3,39 @@
     name: nftables
   become: yes
 
-- name: ensure iptables is not installed
-  package:
-    name: iptables
+- name: ensure iptables service is stopped & disabled
+  service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+  failed_when: no
+  become: yes
+  loop:
+  - iptables
+  - ip6tables
+
+- name: blacklist iptables kernel modules
+  kernel_blacklist:
+    name: "{{ item }}"
+  become: yes
+  loop:
+  - ip_tables
+  - ip6_tables
+  - arp_tables
+  - eb_tables
+  - x_tables
+
+- name: remove iptables kernel modules
+  modprobe:
+    name: "{{ item }}"
     state: absent
   become: yes
+  loop:
+  - ip_tables
+  - ip6_tables
+  - arp_tables
+  - eb_tables
+  - x_tables
 
 - name: ensure /etc/nftables.d/ exists
   file:
