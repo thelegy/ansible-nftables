@@ -47,6 +47,9 @@ table inet filter {
 
     # SSH is open by default but we can enforce a strict policy earlier
     tcp dport ssh accept;
+
+    # Reject some politely before using drop policy
+    limit rate 60/minute reject;
   }
 }
 
