@@ -20,21 +20,17 @@ table inet filter {
     ct state established,related accept;
     ct state invalid drop;
 
-    # Limit pingv6 requests to 10 per second
+    # Limit icmp ping requests to 10 per second
     ip6 nexthdr icmpv6 icmpv6 type echo-request limit rate 10/second accept;
     ip6 nexthdr icmpv6 icmpv6 type echo-request drop;
+    ip protocol icmp   icmp   type echo-request limit rate 10/second accept;
+    ip protocol icmp   icmp   type echo-request drop;
 
-    # Limit other icmpv6 packets to 10 per minute
+    # Limit non-ping icmp packets to 10 per minute
     ip6 nexthdr icmpv6 limit rate 10/minute accept;
     ip6 nexthdr icmpv6 drop;
-
-    # Limit ping requests to 10 per second
-    ip protocol icmp icmp type echo-request limit rate 10/second accept;
-    ip protocol icmp icmp type echo-request drop;
-
-    # Limit other icmp packets to 10 per minute
-    ip protocol icmp limit rate 10/minute accept;
-    ip protocol icmp drop;
+    ip protocol icmp   limit rate 10/minute accept;
+    ip protocol icmp   drop;
   }
 
   chain input {
