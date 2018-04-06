@@ -1,15 +1,16 @@
 {{ ansible_managed|comment }}
 
-
 table inet filter {
 
   map iif_verdict {
     type iface_index : verdict;
     elements = { lo : accept };
   }
+
   map udp_dport_verdict {
     type inet_service : verdict;
   }
+
   map tcp_dport_verdict {
     type inet_service : verdict;
     elements = { ssh : accept };
@@ -53,7 +54,3 @@ table inet filter {
     limit rate 60/minute reject;
   }
 }
-
-# Do this in the future when it is finally supported
-# flush map udp_dport_verdict;
-# flush map tcp_dport_verdict;
