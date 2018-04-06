@@ -12,6 +12,7 @@ table inet filter {
   }
   map tcp_dport_verdict {
     type inet_service : verdict;
+    elements = { ssh : accept };
   }
 
   chain basic_filter {
@@ -33,6 +34,12 @@ table inet filter {
     ip protocol icmp   drop;
   }
 
+  chain port_filter {
+    # Allow port-based verdicts
+    udp dport vmap @udp_dport_verdict;
+    tcp dport vmap @tcp_dport_verdict;
+  }
+
   chain input {
     type filter hook input priority 0; policy drop;
 
@@ -40,13 +47,7 @@ table inet filter {
     iif vmap @iif_verdict;
 
     jump basic_filter;
-
-    # Jump to the appropriate chain
-    udp dport vmap @udp_dport_verdict;
-    tcp dport vmap @tcp_dport_verdict;
-
-    # SSH is open by default but we can enforce a strict policy earlier
-    tcp dport ssh accept;
+    jump port_filter;
 
     # Reject some politely before using drop policy
     limit rate 60/minute reject;
