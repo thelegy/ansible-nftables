@@ -2,6 +2,11 @@
 
 
 table inet filter {
+
+  map iif_verdict {
+    type iface_index : verdict;
+    elements = { lo : accept };
+  }
   map udp_dport_verdict {
     type inet_service : verdict;
   }
@@ -33,6 +38,9 @@ table inet filter {
 
   chain input {
     type filter hook input priority 0; policy drop;
+
+    # Allow interface-based verdicts
+    iif vmap @iif_verdict;
 
     # Do the basic filtering
     jump base;
