@@ -14,7 +14,12 @@ table inet filter {
     type inet_service : verdict;
   }
 
-  chain base {
+  chain basic_filter {
+
+    # Fast path for established connections
+    ct state established,related accept;
+    ct state invalid drop;
+
     # Limit pingv6 requests to 10 per second
     ip6 nexthdr icmpv6 icmpv6 type echo-request limit rate 10/second accept;
     ip6 nexthdr icmpv6 icmpv6 type echo-request drop;
@@ -30,10 +35,6 @@ table inet filter {
     # Limit other icmp packets to 10 per minute
     ip protocol icmp limit rate 10/minute accept;
     ip protocol icmp drop;
-
-    # Utilize connection tracking
-    ct state established,related accept;
-    ct state invalid drop;
   }
 
   chain input {
@@ -42,8 +43,7 @@ table inet filter {
     # Allow interface-based verdicts
     iif vmap @iif_verdict;
 
-    # Do the basic filtering
-    jump base;
+    jump basic_filter;
 
     # Jump to the appropriate chain
     udp dport vmap @udp_dport_verdict;
