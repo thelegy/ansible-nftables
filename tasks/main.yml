@@ -1,61 +1,62 @@
-- name: ensure nftables is installed
-  package:
-    name: nftables
-  become: yes
+- block:
 
-- name: ensure iptables service is stopped & disabled
-  service:
-    name: "{{ item }}"
-    state: stopped
-    enabled: no
-  failed_when: no
-  become: yes
-  loop:
-  - iptables
-  - ip6tables
+  - name: ensure nftables is installed
+    package:
+      name: nftables
 
-- name: blacklist iptables kernel modules
-  kernel_blacklist:
-    name: "{{ item }}"
-  become: yes
-  loop:
-  - ip_tables
-  - ip6_tables
-  - arp_tables
-  - eb_tables
-  - x_tables
+  - name: ensure iptables service is stopped & disabled
+    service:
+      name: "{{ item }}"
+      state: stopped
+      enabled: no
+    failed_when: no
+    loop:
+    - iptables
+    - ip6tables
 
-- name: remove iptables kernel modules
-  modprobe:
-    name: "{{ item }}"
-    state: absent
-  become: yes
-  loop:
-  - ip_tables
-  - ip6_tables
-  - arp_tables
-  - eb_tables
-  - x_tables
+  - name: blacklist iptables kernel modules
+    kernel_blacklist:
+      name: "{{ item }}"
+    loop:
+    - ip_tables
+    - ip6_tables
+    - arp_tables
+    - eb_tables
+    - x_tables
 
-- name: ensure /etc/nftables.d/ exists
-  file:
-    state: directory
-    dest: /etc/nftables.d
-  become: yes
-  notify: reload nftables
+  - name: remove iptables kernel modules
+    modprobe:
+      name: "{{ item }}"
+      state: absent
+    loop:
+    - ip_tables
+    - ip6_tables
+    - arp_tables
+    - eb_tables
+    - x_tables
 
-- name: ensure nftconfig gets loaded
-  service:
-    name: nftables
-    enabled: yes
-  become: yes
+  - name: ensure /etc/nftables.d/ exists
+    file:
+      state: directory
+      dest: /etc/nftables.d
+    notify: reload nftables
 
-- name: ensure the default configs in /etc/nftables.d/ are up to date
-  template:
-    src: "{{ item }}"
-    dest: /etc/nftables.d/{{ item }}
+  - name: ensure nftconfig gets loaded
+    service:
+      name: nftables
+      enabled: yes
+
+  - name: ensure the default configs in /etc/nftables.d/ are up to date
+    template:
+      src: "{{ item }}"
+      dest: /etc/nftables.d/{{ item }}
+    notify: reload nftables
+    loop:
+    - 00-flush_ruleset.nft
+    - 30-global.nft
+
   become: yes
-  notify: reload nftables
-  loop:
-  - 00-flush_ruleset.nft
-  - 30-global.nft
+  tags:
+  - nft
+  - nftables
+  - firewall
